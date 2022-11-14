@@ -34,8 +34,8 @@ class XFormEdgeDetect(XFormType):
         if img is not None:
             imgW,imgH,imgCh = img.shape
             # centre x,y and radius of the mirror  
-            Cx = 426
-            Cy = 447
+            Cx = 505
+            Cy = 307
             R = 275
             # Image input/output data
             Hs = imgH                   # source height
