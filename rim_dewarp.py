@@ -1,42 +1,63 @@
 import cv2 as cv
 import numpy as np
 
+import pcot.config
+from pcot.datum import Datum
 from pcot.sources import SourceSet
-from pcot.xform import XFormType, xformtype, Datum
+from pcot.xform import XFormType, xformtype
 from pcot.xforms.tabdata import TabData
 from pcot.imagecube import ImageCube
 
-import pcot.config
+# set default variables for the RIM centre and radius
+RIMCX = 505
+RIMCY = 307
+RIMRAD = 275
+MINRAD = 250
+MAXRAD = 300
 
 @xformtype
-class XFormEdgeDetect(XFormType):
+class XFormRIMDewarp(XFormType):
     """Dewarp that HRC RIMage!"""
 
     def __init__(self):
         # this node should appear in the maths group.
         super().__init__("Dewarp RIM", "utility", "0.0.0")
         # set input and output - they are images and are unnamed.
-        self.addInputConnector("", Datum.IMG)
-        self.addOutputConnector("", Datum.IMG)
+        self.addInputConnector("image", Datum.IMG)
+        self.addOutputConnector("dewarped", Datum.IMG)
 
-    def createTab(self, n, w):
-        # there is no custom tab, we just use an data canvas. This expects "node.out" to be set to
-        # either None or an imagecube.
-        return TabData(n, w)
+    def createTab(self, node, window):
+        # there is no custom tab
+        return TabData(node, window)
 
-    def init(self, n):
-        # No initialisation required.
-        pass
+    def init(self, node):
+        # image that will be taken from input
+        node.inputImg = None
+        
 
     def perform(self, node):
         # get the input image
         img = node.getInput(0, Datum.IMG)
         if img is not None:
             imgW,imgH,imgCh = img.shape
-            # centre x,y and radius of the mirror  
-            Cx = 505
-            Cy = 307
-            R = 275
+            # get the centre x,y and radius of the mirror
+            # try Hough circles, but if no circles found, use the default values as a fall-back
+            Cx = RIMCX
+            Cy = RIMCY
+            R = RIMRAD
+            # Hough
+            # find mean of all channels - construct a transform array and then use it.
+            mat = np.array([1 / img.channels] * img.channels).reshape((1, img.channels))
+            grey = cv.transform(img.img, mat)
+            # convert to 8-bit integer from 32-bit float
+            img8 = (grey * 255).astype('uint8')
+            gimg = cv.medianBlur(img8,9)
+            circles = cv.HoughCircles(gimg,cv.HOUGH_GRADIENT,1,500,param1=50,param2=30,minRadius=MINRAD, maxRadius=MAXRAD)
+            if circles is not None:
+                circles = np.uint16(np.around(circles))
+                Cx = circles[0,0][0]
+                Cy = circles[0,0][1]
+                R = circles[0,0][2]
             # Image input/output data
             Hs = imgH                   # source height
             Ws = imgW                   # source width
