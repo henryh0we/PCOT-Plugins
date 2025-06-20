@@ -5,7 +5,7 @@ More information on the plugins here is available in the [Wiki](https://github.c
 
 ## Plugins available
 - [RIM Dewarping](https://github.com/AU-ExoMars/PCOT-Plugins/wiki/RIM-Dewarping): Takes a HRC image of the Rover Inspection Mirror (RIM) and reprojects it to correct the distortion. 
-- Distance Estimation: Using stereographic principles, calculate the distance to a given point by selecting it from within a stereo image pair.
+- [Distance Estimation](https://github.com/henryh0we/PCOT-Plugins/wiki/Distance-Estimation): Using stereographic principles, calculate the distance to a given point by selecting it from within a stereo image pair.
 
 ## Adding to this repo
 Got a plugin to add? Let us know!
